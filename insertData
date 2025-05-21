@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insert Data into SQL Table</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 py-8">
+    <div class="container mx-auto p-6 bg-white shadow rounded-lg">
+        <h1 class="text-2xl font-bold mb-6">Insert Data into Table</h1>
+
+        <div class="mb-4">
+            <label for="insertTableName" class="block text-sm font-medium">Table Name</label>
+            <input type="text" id="insertTableName" placeholder="Enter table name" class="w-full p-2 mt-1 border border-gray-300 rounded-md">
+        </div>
+
+        <div id="dataRowsContainer" class="mb-4">
+            <div class="flex justify-between items-center mb-2">
+                <h3 class="text-lg font-semibold">Insert Multiple Records</h3>
+                <button onclick="addDataRow()" class="text-blue-500 text-xl font-bold">+</button>
+            </div>
+            <div class="flex flex-wrap gap-4 items-center mb-2 data-row">
+                <input type="text" placeholder="Value 1" class="p-2 border border-gray-300 rounded-md data-value">
+                <input type="text" placeholder="Value 2" class="p-2 border border-gray-300 rounded-md data-value">
+                <input type="text" placeholder="Value 3" class="p-2 border border-gray-300 rounded-md data-value">
+                <button onclick="addColumn(this)" class="text-blue-500 px-2 py-1 border border-gray-300 rounded-md">+</button>
+                <button onclick="removeColumn(this)" class="text-red-500 px-2 py-1 border border-gray-300 rounded-md">-</button>
+            </div>
+        </div>
+
+        <button onclick="generateInsertSQL()" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">Generate Insert SQL</button>
+
+        <div id="insertOutput" class="mt-6 p-4 border border-gray-300 rounded-md bg-gray-50"></div>
+    </div>
+
+    <footer class="text-center mt-6 text-sm text-gray-500">
+        Powered by SI
+    </footer>
+
+    <script>
+        function addDataRow() {
+            const dataRowsContainer = document.getElementById('dataRowsContainer');
+            const dataRow = document.createElement('div');
+            dataRow.classList.add('flex', 'flex-wrap', 'gap-4', 'items-center', 'mb-2', 'data-row');
+            dataRow.innerHTML = `
+                <input type="text" placeholder="Value 1" class="p-2 border border-gray-300 rounded-md data-value">
+                <input type="text" placeholder="Value 2" class="p-2 border border-gray-300 rounded-md data-value">
+                <input type="text" placeholder="Value 3" class="p-2 border border-gray-300 rounded-md data-value">
+                <button onclick="addColumn(this)" class="text-blue-500 px-2 py-1 border border-gray-300 rounded-md">+</button>
+                <button onclick="removeColumn(this)" class="text-red-500 px-2 py-1 border border-gray-300 rounded-md">-</button>
+            `;
+            dataRowsContainer.appendChild(dataRow);
+        }
+
+        function addColumn(button) {
+            const dataRow = button.parentElement;
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.placeholder = `Value ${dataRow.children.length - 1}`;
+            input.classList.add('p-2', 'border', 'border-gray-300', 'rounded-md', 'data-value');
+            dataRow.insertBefore(input, button);
+        }
+
+        function removeColumn(button) {
+            const dataRow = button.parentElement;
+            const inputs = dataRow.querySelectorAll('.data-value');
+            if (inputs.length > 1) {
+                dataRow.removeChild(inputs[inputs.length - 1]);
+            } else {
+                alert('At least one column is required.');
+            }
+        }
+
+        function generateInsertSQL() {
+            const tableName = document.getElementById('insertTableName').value.trim();
+            if (!tableName) {
+                alert('Table name is required.');
+                return;
+            }
+
+            const rows = document.querySelectorAll('#dataRowsContainer .data-row');
+            const values = [];
+
+            rows.forEach(row => {
+                const rowData = Array.from(row.querySelectorAll('.data-value')).map(input => input.value.trim());
+                if (rowData.some(value => value !== '')) {
+                    values.push(`(${rowData.map(value => `'${value.replace(/'/g, "''")}'`).join(', ')})`);
+                }
+            });
+
+            if (values.length === 0) {
+                alert('At least one row of data is required.');
+                return;
+            }
+
+            const sql = `INSERT INTO ${tableName} VALUES\n${values.join(',\n')};`;
+
+            document.getElementById('insertOutput').textContent = sql;
+        }
+    </script>
+</body>
+</html>
