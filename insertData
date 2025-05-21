@@ -10,27 +10,44 @@
     <div class="container mx-auto p-6 bg-white shadow rounded-lg">
         <h1 class="text-2xl font-bold mb-6">Insert Data into Table</h1>
 
+        <!-- Table Name -->
         <div class="mb-4">
             <label for="insertTableName" class="block text-sm font-medium">Table Name</label>
             <input type="text" id="insertTableName" placeholder="Enter table name" class="w-full p-2 mt-1 border border-gray-300 rounded-md">
         </div>
 
-        <div id="dataRowsContainer" class="mb-4">
+        <!-- Columns -->
+        <div class="mb-4">
             <div class="flex justify-between items-center mb-2">
-                <h3 class="text-lg font-semibold">Insert Multiple Records</h3>
-                <button onclick="addDataRow()" class="text-blue-500 text-xl font-bold">+</button>
+                <h3 class="text-lg font-semibold">Columns</h3>
+                <button onclick="addColumnName()" class="text-blue-500 text-xl font-bold">+</button>
             </div>
-            <div class="flex flex-wrap gap-4 items-center mb-2 data-row">
-                <input type="text" placeholder="Value 1" class="p-2 border border-gray-300 rounded-md data-value">
-                <input type="text" placeholder="Value 2" class="p-2 border border-gray-300 rounded-md data-value">
-                <input type="text" placeholder="Value 3" class="p-2 border border-gray-300 rounded-md data-value">
-                <button onclick="addColumn(this)" class="text-blue-500 px-2 py-1 border border-gray-300 rounded-md">+</button>
-                <button onclick="removeColumn(this)" class="text-red-500 px-2 py-1 border border-gray-300 rounded-md">-</button>
+            <div id="columnNamesContainer" class="overflow-x-auto border p-2 rounded-md bg-gray-50">
+                <div id="columnsRow" class="flex gap-4">
+                    <div class="flex items-center column">
+                        <input type="text" placeholder="Column Name 1" class="p-2 border border-gray-300 rounded-md column-name">
+                        <button onclick="removeColumn(this)" class="text-red-500 text-xl font-bold ml-1">-</button>
+                    </div>
+                </div>
             </div>
         </div>
 
+        <!-- Data Rows -->
+        <div id="dataRowsContainer" class="overflow-x-auto border p-2 rounded-md bg-gray-50">
+            <div class="flex justify-between items-center mb-2">
+                <h3 class="text-lg font-semibold">Insert Data Rows</h3>
+                <button onclick="addDataRow()" class="text-blue-500 text-xl font-bold">+</button>
+            </div>
+            <div class="flex items-center gap-4 border p-4 mb-2 data-row">
+                <input type="text" placeholder="Value 1" class="p-2 border border-gray-300 rounded-md data-value">
+                <button onclick="removeDataRow(this)" class="text-red-500 text-xl font-bold ml-2">-</button>
+            </div>
+        </div>
+
+        <!-- Generate SQL -->
         <button onclick="generateInsertSQL()" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">Generate Insert SQL</button>
 
+        <!-- Output -->
         <div id="insertOutput" class="mt-6 p-4 border border-gray-300 rounded-md bg-gray-50"></div>
     </div>
 
@@ -39,37 +56,74 @@
     </footer>
 
     <script>
-        function addDataRow() {
-            const dataRowsContainer = document.getElementById('dataRowsContainer');
-            const dataRow = document.createElement('div');
-            dataRow.classList.add('flex', 'flex-wrap', 'gap-4', 'items-center', 'mb-2', 'data-row');
-            dataRow.innerHTML = `
-                <input type="text" placeholder="Value 1" class="p-2 border border-gray-300 rounded-md data-value">
-                <input type="text" placeholder="Value 2" class="p-2 border border-gray-300 rounded-md data-value">
-                <input type="text" placeholder="Value 3" class="p-2 border border-gray-300 rounded-md data-value">
-                <button onclick="addColumn(this)" class="text-blue-500 px-2 py-1 border border-gray-300 rounded-md">+</button>
-                <button onclick="removeColumn(this)" class="text-red-500 px-2 py-1 border border-gray-300 rounded-md">-</button>
-            `;
-            dataRowsContainer.appendChild(dataRow);
-        }
+        function addColumnName() {
+            // Add a new column input
+            const columnsRow = document.getElementById('columnsRow');
+            const columnIndex = columnsRow.children.length + 1;
+            const columnDiv = document.createElement('div');
+            columnDiv.classList.add('flex', 'items-center', 'column', 'gap-2');
 
-        function addColumn(button) {
-            const dataRow = button.parentElement;
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.placeholder = `Value ${dataRow.children.length - 1}`;
-            input.classList.add('p-2', 'border', 'border-gray-300', 'rounded-md', 'data-value');
-            dataRow.insertBefore(input, button);
+            columnDiv.innerHTML = `
+                <input type="text" placeholder="Column Name ${columnIndex}" class="p-2 border border-gray-300 rounded-md column-name">
+                <button onclick="removeColumn(this)" class="text-red-500 text-xl font-bold ml-2">-</button>
+            `;
+
+            columnsRow.appendChild(columnDiv);
+
+            // Add a corresponding input for all data rows
+            const dataRows = document.querySelectorAll('.data-row');
+            dataRows.forEach(row => {
+                const dataInput = document.createElement('input');
+                dataInput.type = 'text';
+                dataInput.placeholder = `Value ${columnIndex}`;
+                dataInput.classList.add('p-2', 'border', 'border-gray-300', 'rounded-md', 'data-value');
+                row.insertBefore(dataInput, row.querySelector('button'));
+            });
         }
 
         function removeColumn(button) {
-            const dataRow = button.parentElement;
-            const inputs = dataRow.querySelectorAll('.data-value');
-            if (inputs.length > 1) {
-                dataRow.removeChild(inputs[inputs.length - 1]);
-            } else {
-                alert('At least one column is required.');
+            const columnIndex = Array.from(button.parentNode.parentNode.children).indexOf(button.parentNode);
+            button.parentNode.remove();
+
+            // Remove the corresponding input from all data rows
+            const dataRows = document.querySelectorAll('.data-row');
+            dataRows.forEach(row => {
+                const inputs = row.querySelectorAll('.data-value');
+                if (inputs[columnIndex]) {
+                    inputs[columnIndex].remove();
+                }
+            });
+        }
+
+        function addDataRow() {
+            const dataRowsContainer = document.getElementById('dataRowsContainer');
+            const dataRow = document.createElement('div');
+            dataRow.classList.add('flex', 'items-center', 'gap-4', 'border', 'p-4', 'mb-2', 'data-row');
+
+            // Add inputs for the existing columns
+            const columnCount = document.querySelectorAll('#columnsRow .column-name').length;
+            for (let i = 1; i <= columnCount; i++) {
+                const dataInput = document.createElement('input');
+                dataInput.type = 'text';
+                dataInput.placeholder = `Value ${i}`;
+                dataInput.classList.add('p-2', 'border', 'border-gray-300', 'rounded-md', 'data-value');
+                dataRow.appendChild(dataInput);
             }
+
+            // Add remove button
+            const removeButton = document.createElement('button');
+            removeButton.classList.add('text-red-500', 'text-xl', 'font-bold', 'ml-2');
+            removeButton.textContent = '-';
+            removeButton.onclick = function() {
+                dataRow.remove();
+            };
+
+            dataRow.appendChild(removeButton);
+            dataRowsContainer.appendChild(dataRow);
+        }
+
+        function removeDataRow(button) {
+            button.parentNode.remove();
         }
 
         function generateInsertSQL() {
@@ -79,7 +133,17 @@
                 return;
             }
 
-            const rows = document.querySelectorAll('#dataRowsContainer .data-row');
+            // Get column names
+            const columnInputs = document.querySelectorAll('.column-name');
+            const columnNames = Array.from(columnInputs).map(input => input.value.trim()).filter(Boolean);
+
+            if (columnNames.length === 0) {
+                alert('At least one column name is required.');
+                return;
+            }
+
+            // Get data rows
+            const rows = document.querySelectorAll('.data-row');
             const values = [];
 
             rows.forEach(row => {
@@ -94,7 +158,8 @@
                 return;
             }
 
-            const sql = `INSERT INTO ${tableName} VALUES\n${values.join(',\n')};`;
+            // Generate SQL
+            const sql = `INSERT INTO ${tableName} (${columnNames.join(', ')}) VALUES\n${values.join(',\n')};`;
 
             document.getElementById('insertOutput').textContent = sql;
         }
