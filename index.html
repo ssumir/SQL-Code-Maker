@@ -14,48 +14,56 @@
             <input type="text" id="databaseName" placeholder="Enter database name" class="w-full p-2 mt-1 border border-gray-300 rounded-md">
         </div>
 
-        <div class="mb-4">
-            <label for="tableName" class="block text-sm font-medium">Table Name</label>
-            <input type="text" id="tableName" placeholder="Enter table name" class="w-full p-2 mt-1 border border-gray-300 rounded-md">
-        </div>
-
-        <div id="columnsContainer" class="mb-4">
-            <div class="flex justify-between items-center mb-2">
-                <h3 class="text-lg font-semibold">Columns</h3>
-                <button onclick="addColumnConfig()" class="text-blue-500 text-xl font-bold">+</button>
+        <div id="tablesContainer" class="mb-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold">Tables</h3>
+                <button onclick="addTableConfig()" class="text-blue-500 text-xl font-bold">+</button>
             </div>
-            <div class="flex flex-wrap gap-4 items-center mb-2">
-                <input type="text" placeholder="Name" class="p-2 border border-gray-300 rounded-md col-name">
-                <select class="p-2 border border-gray-300 rounded-md col-type">
-                    <option value="INT">INT</option>
-                    <option value="BIGINT">BIGINT</option>
-                    <option value="VARCHAR">VARCHAR</option>
-                    <option value="NVARCHAR">NVARCHAR</option>
-                    <option value="TEXT">TEXT</option>
-                    <option value="DATE">DATE</option>
-                    <option value="DATETIME">DATETIME</option>
-                    <option value="TIMESTAMP">TIMESTAMP</option>
-                    <option value="DECIMAL">DECIMAL</option>
-                    <option value="FLOAT">FLOAT</option>
-                    <option value="BIT">BOOLEAN (BIT)</option>
-                </select>
-                <input type="text" placeholder="Length/Values" class="p-2 border border-gray-300 rounded-md col-length">
-                <select class="p-2 border border-gray-300 rounded-md col-null">
-                    <option value="NOT NULL">NOT NULL</option>
-                    <option value="NULL">NULL</option>
-                </select>
-                <input type="text" placeholder="Default" class="p-2 border border-gray-300 rounded-md col-default">
-                <select class="p-2 border border-gray-300 rounded-md col-attributes">
-                    <option value="">None</option>
-                    <option value="UNIQUE">UNIQUE</option>
-                    <option value="IDENTITY">IDENTITY</option>
-                    <option value="CHECK">CHECK</option>
-                </select>
-                <select class="p-2 border border-gray-300 rounded-md col-index">
-                    <option value="">None</option>
-                    <option value="PRIMARY KEY">Primary Key</option>
-                    <option value="FOREIGN KEY">Foreign Key</option>
-                </select>
+            <!-- Initial Table Configuration -->
+            <div class="table-config border border-gray-300 p-4 rounded-lg mb-4">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium">Table Name</label>
+                    <input type="text" placeholder="Enter table name" class="w-full p-2 mt-1 border border-gray-300 rounded-md table-name">
+                </div>
+                <div class="columnsContainer mb-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <h4 class="text-md font-semibold">Columns</h4>
+                        <button onclick="addColumnConfig(this)" class="text-blue-500 text-xl font-bold">+</button>
+                    </div>
+                    <div class="flex flex-wrap gap-4 items-center mb-2">
+                        <input type="text" placeholder="Name" class="p-2 border border-gray-300 rounded-md col-name">
+                        <select class="p-2 border border-gray-300 rounded-md col-type">
+                            <option value="INT">INT</option>
+                            <option value="BIGINT">BIGINT</option>
+                            <option value="VARCHAR">VARCHAR</option>
+                            <option value="NVARCHAR">NVARCHAR</option>
+                            <option value="TEXT">TEXT</option>
+                            <option value="DATE">DATE</option>
+                            <option value="DATETIME">DATETIME</option>
+                            <option value="TIMESTAMP">TIMESTAMP</option>
+                            <option value="DECIMAL">DECIMAL</option>
+                            <option value="FLOAT">FLOAT</option>
+                            <option value="BIT">BOOLEAN (BIT)</option>
+                        </select>
+                        <input type="text" placeholder="Length/Values" class="p-2 border border-gray-300 rounded-md col-length">
+                        <select class="p-2 border border-gray-300 rounded-md col-null">
+                            <option value="NOT NULL">NOT NULL</option>
+                            <option value="NULL">NULL</option>
+                        </select>
+                        <input type="text" placeholder="Default" class="p-2 border border-gray-300 rounded-md col-default">
+                        <select class="p-2 border border-gray-300 rounded-md col-attributes">
+                            <option value="">None</option>
+                            <option value="UNIQUE">UNIQUE</option>
+                            <option value="IDENTITY">IDENTITY</option>
+                            <option value="CHECK">CHECK</option>
+                        </select>
+                        <select class="p-2 border border-gray-300 rounded-md col-index">
+                            <option value="">None</option>
+                            <option value="PRIMARY KEY">Primary Key</option>
+                            <option value="FOREIGN KEY">Foreign Key</option>
+                        </select>
+                    </div>
+                </div>
             </div>
         </div>
         <button onclick="generateSQL()" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">Generate SQL</button>
@@ -68,101 +76,138 @@
     </footer>
 
     <script>
-        function addColumnConfig() {
-            const columnsContainer = document.getElementById('columnsContainer');
-            const columnConfig = document.createElement('div');
-            columnConfig.classList.add('flex', 'flex-wrap', 'gap-4', 'items-center', 'mb-2');
-            columnConfig.innerHTML = `
-                <input type="text" placeholder="Name" class="p-2 border border-gray-300 rounded-md col-name">
-                <select class="p-2 border border-gray-300 rounded-md col-type">
-                    <option value="INT">INT</option>
-                    <option value="BIGINT">BIGINT</option>
-                    <option value="VARCHAR">VARCHAR</option>
-                    <option value="NVARCHAR">NVARCHAR</option>
-                    <option value="TEXT">TEXT</option>
-                    <option value="DATE">DATE</option>
-                    <option value="DATETIME">DATETIME</option>
-                    <option value="TIMESTAMP">TIMESTAMP</option>
-                    <option value="DECIMAL">DECIMAL</option>
-                    <option value="FLOAT">FLOAT</option>
-                    <option value="BIT">BOOLEAN (BIT)</option>
-                </select>
-                <input type="text" placeholder="Length/Values" class="p-2 border border-gray-300 rounded-md col-length">
-                <select class="p-2 border border-gray-300 rounded-md col-null">
-                    <option value="NOT NULL">NOT NULL</option>
-                    <option value="NULL">NULL</option>
-                </select>
-                <input type="text" placeholder="Default" class="p-2 border border-gray-300 rounded-md col-default">
-                <select class="p-2 border border-gray-300 rounded-md col-attributes">
-                    <option value="">None</option>
-                    <option value="UNIQUE">UNIQUE</option>
-                    <option value="IDENTITY">IDENTITY</option>
-                    <option value="CHECK">CHECK</option>
-                </select>
-                <select class="p-2 border border-gray-300 rounded-md col-index">
-                    <option value="">None</option>
-                    <option value="PRIMARY KEY">Primary Key</option>
-                    <option value="FOREIGN KEY">Foreign Key</option>
-                </select>
-            `;
-            columnsContainer.appendChild(columnConfig);
+function addTableConfig() {
+    const tablesContainer = document.getElementById("tablesContainer");
+    const newTable = document.createElement("div");
+    newTable.classList.add("table-config", "border", "border-gray-300", "p-4", "rounded-lg", "mb-4");
+    newTable.innerHTML = `
+        <div class="mb-4">
+            <label class="block text-sm font-medium">Table Name</label>
+            <input type="text" placeholder="Enter table name" class="w-full p-2 mt-1 border border-gray-300 rounded-md table-name">
+        </div>
+        <div class="columnsContainer mb-4">
+            <div class="flex justify-between items-center mb-2">
+                <h4 class="text-md font-semibold">Columns</h4>
+                <button onclick="addColumnConfig(this)" class="text-blue-500 text-xl font-bold">+</button>
+            </div>
+        </div>
+    `;
+    tablesContainer.appendChild(newTable);
+    addColumnConfig(newTable.querySelector(".columnsContainer button"));
+}
+
+function addColumnConfig(button) {
+    const columnsContainer = button.closest(".columnsContainer");
+    const newColumn = document.createElement("div");
+    newColumn.classList.add("flex", "flex-wrap", "gap-4", "items-center", "mb-2");
+    newColumn.innerHTML = `
+        <input type="text" placeholder="Name" class="p-2 border border-gray-300 rounded-md col-name">
+        <select class="p-2 border border-gray-300 rounded-md col-type">
+            <option value="INT">INT</option>
+            <option value="BIGINT">BIGINT</option>
+            <option value="VARCHAR">VARCHAR</option>
+            <option value="NVARCHAR">NVARCHAR</option>
+            <option value="TEXT">TEXT</option>
+            <option value="DATE">DATE</option>
+            <option value="DATETIME">DATETIME</option>
+            <option value="TIMESTAMP">TIMESTAMP</option>
+            <option value="DECIMAL">DECIMAL</option>
+            <option value="FLOAT">FLOAT</option>
+            <option value="BIT">BOOLEAN (BIT)</option>
+        </select>
+        <input type="text" placeholder="Length/Values" class="p-2 border border-gray-300 rounded-md col-length">
+        <select class="p-2 border border-gray-300 rounded-md col-null">
+            <option value="NOT NULL">NOT NULL</option>
+            <option value="NULL">NULL</option>
+        </select>
+        <input type="text" placeholder="Default" class="p-2 border border-gray-300 rounded-md col-default">
+        <select class="p-2 border border-gray-300 rounded-md col-index" onchange="toggleReferenceFields(this)">
+            <option value="">None</option>
+            <option value="PRIMARY KEY">Primary Key</option>
+            <option value="FOREIGN KEY">Foreign Key</option>
+        </select>
+        <input type="text" placeholder="Reference Table" class="p-2 border border-gray-300 rounded-md col-ref-table hidden">
+        <input type="text" placeholder="Reference Column" class="p-2 border border-gray-300 rounded-md col-ref-column hidden">
+    `;
+    columnsContainer.appendChild(newColumn);
+}
+
+function toggleReferenceFields(selectElement) {
+    const refTable = selectElement.parentNode.querySelector(".col-ref-table");
+    const refColumn = selectElement.parentNode.querySelector(".col-ref-column");
+    if (selectElement.value === "FOREIGN KEY") {
+        refTable.classList.remove("hidden");
+        refColumn.classList.remove("hidden");
+    } else {
+        refTable.classList.add("hidden");
+        refColumn.classList.add("hidden");
+    }
+}
+
+function generateSQL() {
+    const databaseName = document.getElementById("databaseName").value.trim();
+    if (!databaseName) {
+        alert("Please provide a database name.");
+        return;
+    }
+
+    let sql = `-- SQL Script --\n\nCREATE DATABASE ${databaseName};\nUSE ${databaseName};\n\n`;
+
+    const tables = document.querySelectorAll(".table-config");
+    const tableDefinitions = [];
+
+    tables.forEach((table, tableIndex) => {
+        const tableName = table.querySelector(".table-name").value.trim();
+        if (!tableName) {
+            alert(`Table ${tableIndex + 1}: Please provide a table name.`);
+            return;
         }
 
-        function generateSQL() {
-            const dbName = document.getElementById('databaseName').value.trim();
-            const tableName = document.getElementById('tableName').value.trim();
-            const columns = [];
+        let tableSQL = `CREATE TABLE ${tableName} (\n`;
 
-            document.querySelectorAll('#columnsContainer > div:not(.flex.justify-between)').forEach(config => {
-                const name = config.querySelector('.col-name').value.trim();
-                const type = config.querySelector('.col-type').value;
-                const length = config.querySelector('.col-length').value.trim();
-                const nullable = config.querySelector('.col-null').value;
-                const defaultValue = config.querySelector('.col-default').value.trim();
-                const attributes = config.querySelector('.col-attributes').value;
-                const index = config.querySelector('.col-index').value;
+        const columns = table.querySelectorAll(".columnsContainer .flex-wrap");
+        const columnDefinitions = [];
+        const foreignKeys = [];
 
-                if (name) {
-                    if (index === 'FOREIGN KEY') {
-                        const refTable = prompt('Enter the referenced table for the foreign key:');
-                        const refColumn = prompt(`Enter the referenced column in table ${refTable}:`);
-                        if (refTable && refColumn) {
-                            columns.push(`${name} INT, FOREIGN KEY (${name}) REFERENCES ${refTable}(${refColumn})`);
-                        } else {
-                            alert('Both referenced table and column must be provided!');
-                        }
-                    } else {
-                        let columnDef = `${name} ${type}`;
-                        if (length) columnDef += `(${length})`;
-                        columnDef += ` ${nullable}`;
-                        if (defaultValue) {
-                            if (type === 'TIMESTAMP' && defaultValue.toUpperCase() === 'CURRENT_TIMESTAMP') {
-                                columnDef += ` DEFAULT CURRENT_TIMESTAMP`;
-                            } else {
-                                columnDef += ` DEFAULT '${defaultValue.replace(/'/g, "''")}'`;
-                            }
-                        }
-                        if (attributes === 'IDENTITY') columnDef += ` IDENTITY(1,1)`;
-                        else if (attributes) columnDef += ` ${attributes}`;
+        columns.forEach((column) => {
+            const name = column.querySelector(".col-name").value.trim();
+            const type = column.querySelector(".col-type").value;
+            const length = column.querySelector(".col-length").value.trim();
+            const nullable = column.querySelector(".col-null").value;
+            const defaultValue = column.querySelector(".col-default").value.trim();
+            const index = column.querySelector(".col-index").value;
 
-                        columns.push(columnDef);
-                    }
-                }
-            });
-
-            if (!dbName || !tableName || columns.length === 0) {
-                alert('Please fill in all fields and add at least one column!');
+            if (!name) {
+                alert(`Column in table ${tableName}: Name is required.`);
                 return;
             }
 
-            const createDatabaseSQL = `CREATE DATABASE ${dbName};`;
-            const useDatabaseSQL = `USE ${dbName};`;
-            const createTableSQL = `CREATE TABLE ${tableName} (${columns.join(', ')});`;
+            let definition = `${name} ${type}`;
+            if (length) definition += `(${length})`;
+            definition += ` ${nullable}`;
+            if (defaultValue) definition += ` DEFAULT ${defaultValue}`;
+            columnDefinitions.push(definition);
 
-            const output = `-- SQL Script --\n\n${createDatabaseSQL}\n\n${useDatabaseSQL}\n\n${createTableSQL}`;
+            if (index === "FOREIGN KEY") {
+                const refTable = column.querySelector(".col-ref-table").value.trim();
+                const refColumn = column.querySelector(".col-ref-column").value.trim();
+                if (refTable && refColumn) {
+                    foreignKeys.push(`FOREIGN KEY (${name}) REFERENCES ${refTable}(${refColumn})`);
+                } else {
+                    alert(`Foreign key in table ${tableName}: Please provide reference table and column.`);
+                }
+            }
+        });
 
-            document.getElementById('output').innerText = output;
-        }
+        tableSQL += columnDefinitions.concat(foreignKeys).join(",\n");
+        tableSQL += `\n);\n\n`;
+        tableDefinitions.push(tableSQL);
+    });
+
+    sql += tableDefinitions.join("\n");
+    document.getElementById("output").textContent = sql;
+}
+
     </script>
 </body>
 </html>
