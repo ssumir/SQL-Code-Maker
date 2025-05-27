@@ -6,6 +6,7 @@
     <title>SQL Generator</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
+  
 <body class="bg-gray-100 py-8">
     <div class="container mx-auto p-6 bg-white shadow rounded-lg">
         <h1 class="text-2xl font-bold mb-6">SQL Database and Table Generator</h1>
@@ -19,7 +20,6 @@
                 <h3 class="text-lg font-semibold">Tables</h3>
                 <button onclick="addTableConfig()" class="text-blue-500 text-xl font-bold">+</button>
             </div>
-            <!-- Initial Table Configuration -->
             <div class="table-config border border-gray-300 p-4 rounded-lg mb-4">
                 <div class="mb-4">
                     <label class="block text-sm font-medium">Table Name</label>
@@ -57,18 +57,20 @@
                             <option value="IDENTITY">IDENTITY</option>
                             <option value="CHECK">CHECK</option>
                         </select>
-                        <select class="p-2 border border-gray-300 rounded-md col-index">
+                        <select class="p-2 border border-gray-300 rounded-md col-index" onchange="toggleReferenceFields(this)">
                             <option value="">None</option>
                             <option value="PRIMARY KEY">Primary Key</option>
                             <option value="FOREIGN KEY">Foreign Key</option>
                         </select>
+                        <input type="text" placeholder="Reference Table" class="p-2 border border-gray-300 rounded-md col-ref-table hidden">
+                        <input type="text" placeholder="Reference Column" class="p-2 border border-gray-300 rounded-md col-ref-column hidden">
                     </div>
                 </div>
             </div>
         </div>
         <button onclick="generateSQL()" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">Generate SQL</button>
 
-        <div id="output" class="mt-6 p-4 border border-gray-300 rounded-md bg-gray-50"></div>
+        <div id="output" class="mt-6 p-4 border border-gray-300 rounded-md bg-gray-50 whitespace-pre-line"></div>
     </div>
 
     <footer class="text-center mt-6 text-sm text-gray-500">
@@ -121,6 +123,12 @@ function addColumnConfig(button) {
             <option value="NULL">NULL</option>
         </select>
         <input type="text" placeholder="Default" class="p-2 border border-gray-300 rounded-md col-default">
+        <select class="p-2 border border-gray-300 rounded-md col-attributes">
+            <option value="">None</option>
+            <option value="UNIQUE">UNIQUE</option>
+            <option value="IDENTITY">IDENTITY</option>
+            <option value="CHECK">CHECK</option>
+        </select>
         <select class="p-2 border border-gray-300 rounded-md col-index" onchange="toggleReferenceFields(this)">
             <option value="">None</option>
             <option value="PRIMARY KEY">Primary Key</option>
@@ -151,7 +159,7 @@ function generateSQL() {
         return;
     }
 
-    let sql = `-- SQL Script --\n\nCREATE DATABASE ${databaseName};\nUSE ${databaseName};\n\n`;
+    let sql = `-- SQL Script --\n\nCREATE DATABASE ${databaseName};\n\nUSE ${databaseName};\n\n`;
 
     const tables = document.querySelectorAll(".table-config");
     const tableDefinitions = [];
@@ -173,7 +181,6 @@ function generateSQL() {
             const name = column.querySelector(".col-name").value.trim();
             const type = column.querySelector(".col-type").value;
             const length = column.querySelector(".col-length").value.trim();
-            const nullable = column.querySelector(".col-null").value;
             const defaultValue = column.querySelector(".col-default").value.trim();
             const index = column.querySelector(".col-index").value;
 
@@ -184,11 +191,13 @@ function generateSQL() {
 
             let definition = `${name} ${type}`;
             if (length) definition += `(${length})`;
-            definition += ` ${nullable}`;
-            if (defaultValue) definition += ` DEFAULT ${defaultValue}`;
-            columnDefinitions.push(definition);
 
-            if (index === "FOREIGN KEY") {
+            if (index === "PRIMARY KEY") {
+                if (type === "INT" || type === "BIGINT") {
+                    definition += " IDENTITY(1,1)";
+                }
+                definition += " PRIMARY KEY"; // Enforces NOT NULL and UNIQUE implicitly
+            } else if (index === "FOREIGN KEY") {
                 const refTable = column.querySelector(".col-ref-table").value.trim();
                 const refColumn = column.querySelector(".col-ref-column").value.trim();
                 if (refTable && refColumn) {
@@ -196,7 +205,12 @@ function generateSQL() {
                 } else {
                     alert(`Foreign key in table ${tableName}: Please provide reference table and column.`);
                 }
+            } else {
+                definition += ` ${column.querySelector(".col-null").value}`; // Retains user-specified NULL or NOT NULL
             }
+
+            if (defaultValue) definition += ` DEFAULT ${defaultValue}`;
+            columnDefinitions.push(definition);
         });
 
         tableSQL += columnDefinitions.concat(foreignKeys).join(",\n");
@@ -204,10 +218,14 @@ function generateSQL() {
         tableDefinitions.push(tableSQL);
     });
 
-    sql += tableDefinitions.join("\n");
+    sql += tableDefinitions.join("\n\n");
     document.getElementById("output").textContent = sql;
 }
 
     </script>
 </body>
 </html>
+
+
+
+
