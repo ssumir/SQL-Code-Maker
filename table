@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+  
+<body class="bg-gray-100 py-8">
+    <div class="container mx-auto p-6 bg-white shadow rounded-lg">
+        <h1 class="text-2xl font-bold mb-6">SQL Database and Table Generator</h1>
+        <div class="mb-4">
+            <label for="databaseName" class="block text-sm font-medium">Database Name</label>
+            <input type="text" id="databaseName" placeholder="Enter database name" class="w-full p-2 mt-1 border border-gray-300 rounded-md">
+        </div>
+
+        <div id="tablesContainer" class="mb-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold">Tables</h3>
+                <button onclick="addTableConfig()" class="text-blue-500 text-xl font-bold">+</button>
+            </div>
+            
+       <div class="mb-4">
+           <div id="tabsHeader" class="flex flex-wrap border-b border-red-500" role="tablist" aria-label="Table Configurations">
+           </div>
+           <div id="tabsContent" class="mt-4"></div>
+      </div>
+            
+            
+        <button onclick="generateSQL()" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">Generate SQL</button>
+
+        <div id="output" class="mt-6 p-4 border border-gray-300 rounded-md bg-gray-50 whitespace-pre-line"></div>
+    </div>
+     </div>
+    
+
+    <footer class="text-center mt-6 text-sm text-gray-500">
+        Powered by SI
+    </footer>
+
+    <script>
+
+
+// Global counter for unique IDs for tabs and panels
+let tableCounter = 0;
+// activeTableId is tracked by the showTableTab function internally,
+// so a global variable might not be strictly necessary unless used elsewhere.
+// Removed it for slightly cleaner global scope if not critically needed.
+// let activeTableId = null;
+
+/**
+ * Adds a new table configuration tab and panel to the UI.
+ */
+function addTableConfig() {
+    tableCounter++;
+    const currentTableId = `table-${tableCounter}`;
+
+    const tabsHeader = document.getElementById("tabsHeader");
+    const tabsContent = document.getElementById("tabsContent");
+
+    // 1. Create the Tab Button
+    const newTabButton = document.createElement("button");
+    newTabButton.id = `tab-btn-${currentTableId}`; // Unique ID for the button
+    newTabButton.classList.add(
+        "py-2", "px-4", "border-b-2", "text-lg", "font-semibold",
+        "hover:text-blue-700", "hover:border-blue-200",
+        "focus:outline-none", "focus:ring-2", "focus:ring-blue-500", "whitespace-nowrap" // Added whitespace-nowrap
+    );
+    newTabButton.setAttribute("role", "tab");
+    newTabButton.setAttribute("aria-controls", `panel-${currentTableId}`);
+    newTabButton.setAttribute("aria-selected", "false");
+    newTabButton.textContent = `Table ${tableCounter}`; // Initial tab name
+    newTabButton.onclick = () => showTableTab(currentTableId); // Click handler
+
+    tabsHeader.appendChild(newTabButton);
+
+    // 2. Create the Tab Content Panel
+    const newTablePanel = document.createElement("div");
+    newTablePanel.id = `panel-${currentTableId}`; // Unique ID for the panel
+    // Removed border-gray-300 from here as the inner table-config div already has it for visual consistency
+    newTablePanel.classList.add("table-config-panel", "hidden", "p-4", "rounded-lg");
+    newTablePanel.setAttribute("role", "tabpanel");
+    newTablePanel.setAttribute("aria-labelledby", `tab-btn-${currentTableId}`);
+
+    // The content for the table configuration goes inside this panel
+    newTablePanel.innerHTML = `
+        <div class="table-config rounded-lg"> <div class="mb-4">
+                <label class="block text-sm font-medium">Table Name</label>
+                <input type="text" placeholder="Enter table name"
+                    class="w-full p-2 mt-1 border border-gray-300 rounded-md table-name"
+                    oninput="updateTabName('${currentTableId}', this.value)">
+            </div>
+            <div class="columnsContainer mb-4">
+                <div class="flex justify-between items-center mb-2">
+                    <h4 class="text-md font-semibold">Columns</h4>
+                    <button onclick="addColumnConfig(this)" class="text-blue-500 text-xl font-bold">+</button>
+                </div>
+            </div>
+        </div>
+    `;
+    tabsContent.appendChild(newTablePanel);
+
+    // 3. Add a default column to the new table
+    // Ensure the button actually exists before calling addColumnConfig
+    const addColumnButton = newTablePanel.querySelector(".columnsContainer button");
+    if (addColumnButton) {
+        addColumnConfig(addColumnButton);
+    } else {
+        console.error("Could not find add column button in new table panel.");
+    }
+
+
+    // 4. Automatically show the newly added tab
+    showTableTab(currentTableId);
+}
+
+/**
+ * Handles showing/hiding table configuration tabs and updating active states.
+ * @param {string} tableIdToShow - The ID of the table (e.g., 'table-1') to show.
+ */
+function showTableTab(tableIdToShow) {
+    const tabsHeader = document.getElementById("tabsHeader");
+    const tabsContent = document.getElementById("tabsContent");
+
+    if (!tabsHeader || !tabsContent) {
+        console.error("Tab containers not found. Cannot show tab.");
+        return;
+    }
+
+    // Deactivate all tab buttons
+    tabsHeader.querySelectorAll("button").forEach(button => {
+        button.classList.remove("border-blue-500", "text-blue-700");
+        button.classList.add("border-gray-200", "text-gray-600");
+        button.setAttribute("aria-selected", "false");
+    });
+
+    // Hide all tab panels
+    tabsContent.querySelectorAll(".table-config-panel").forEach(panel => {
+        panel.classList.add("hidden");
+        // Also remove padding/border from hidden panels for cleaner look if inner div has it
+        panel.classList.remove("p-4", "border", "border-gray-300");
+    });
+
+    // Activate the clicked tab button
+    const activeTabButton = document.getElementById(`tab-btn-${tableIdToShow}`);
+    if (activeTabButton) {
+        activeTabButton.classList.remove("border-gray-200", "text-gray-600");
+        activeTabButton.classList.add("border-blue-500", "text-blue-700");
+        activeTabButton.setAttribute("aria-selected", "true");
+    }
+
+    // Show the corresponding tab panel
+    const activeTablePanel = document.getElementById(`panel-${tableIdToShow}`);
+    if (activeTablePanel) {
+        activeTablePanel.classList.remove("hidden");
+        // Add padding/border back to the visible panel
+        activeTablePanel.classList.add("p-4", "border", "border-gray-300");
+    }
+}
+
+/**
+ * Updates the text content of a table tab button as the user types the table name.
+ * @param {string} tableId - The ID of the table (e.g., 'table-1').
+ * @param {string} newName - The new name entered by the user.
+ */
+function updateTabName(tableId, newName) {
+    const tabButton = document.getElementById(`tab-btn-${tableId}`);
+    if (tabButton) {
+        tabButton.textContent = newName.trim() === "" ? `Table ${tableId.split('-')[1]}` : newName;
+    }
+}
+
+/**
+ * Adds a new column configuration row to the specified table.
+ * @param {HTMLButtonElement} button - The button that triggered the column addition (the '+' button).
+ */
+function addColumnConfig(button) {
+    const columnsContainer = button.closest(".columnsContainer");
+    if (!columnsContainer) {
+        console.error("Columns container not found. Cannot add column.");
+        return;
+    }
+
+    const newColumn = document.createElement("div");
+    // Removed mb-2 here to allow for slightly tighter vertical packing if needed
+    newColumn.classList.add("flex", "flex-wrap", "gap-4", "items-center", "mb-2"); // Keep mb-2
+    newColumn.innerHTML = `
+        <input type="text" placeholder="Name" class="p-2 border border-gray-300 rounded-md col-name flex-1 min-w-[120px]" required>
+        <select class="p-2 border border-gray-300 rounded-md col-type flex-1 min-w-[100px]">
+            <option value="INT">INT</option>
+            <option value="BIGINT">BIGINT</option>
+            <option value="VARCHAR">VARCHAR</option>
+            <option value="NVARCHAR">NVARCHAR</option>
+            <option value="TEXT">TEXT</option>
+            <option value="DATE">DATE</option>
+            <option value="DATETIME">DATETIME</option>
+            <option value="TIMESTAMP">TIMESTAMP</option>
+            <option value="DECIMAL">DECIMAL</option>
+            <option value="FLOAT">FLOAT</option>
+            <option value="BIT">BOOLEAN (BIT)</option>
+        </select>
+        <input type="text" placeholder="Length/Values" class="p-2 border border-gray-300 rounded-md col-length flex-1 min-w-[120px]">
+        <select class="p-2 border border-gray-300 rounded-md col-null flex-none w-[100px]">
+            <option value="NOT NULL">NOT NULL</option>
+            <option value="NULL">NULL</option>
+        </select>
+        <input type="text" placeholder="Default" class="p-2 border border-gray-300 rounded-md col-default flex-1 min-w-[100px]">
+        <select class="p-2 border border-gray-300 rounded-md col-attributes flex-1 min-w-[100px]">
+            <option value="">None</option>
+            <option value="UNIQUE">UNIQUE</option>
+            <option value="IDENTITY">IDENTITY</option>
+            <option value="CHECK">CHECK</option>
+        </select>
+        <select class="p-2 border border-gray-300 rounded-md col-index flex-1 min-w-[100px]" onchange="toggleReferenceFields(this)">
+            <option value="">None</option>
+            <option value="PRIMARY KEY">Primary Key</option>
+            <option value="FOREIGN KEY">Foreign Key</option>
+        </select>
+        <input type="text" placeholder="Ref Table" class="p-2 border border-gray-300 rounded-md col-ref-table hidden flex-1 min-w-[120px]">
+        <input type="text" placeholder="Ref Column" class="p-2 border border-gray-300 rounded-md col-ref-column hidden flex-1 min-w-[120px]">
+        <button type="button" onclick="this.parentNode.remove()" class="text-red-500 hover:text-red-700 text-xl font-bold ml-auto leading-none" aria-label="Remove column">&times;</button>
+    `;
+    columnsContainer.appendChild(newColumn);
+}
+
+/**
+ * Toggles the visibility of reference table/column inputs based on 'Foreign Key' selection.
+ * @param {HTMLSelectElement} selectElement - The select element that triggered the change (.col-index).
+ */
+function toggleReferenceFields(selectElement) {
+    const parentNode = selectElement.parentNode;
+    if (!parentNode) return; // Defensive check
+
+    const refTable = parentNode.querySelector(".col-ref-table");
+    const refColumn = parentNode.querySelector(".col-ref-column");
+
+    if (selectElement.value === "FOREIGN KEY") {
+        refTable?.classList.remove("hidden"); // Optional chaining for robustness
+        refColumn?.classList.remove("hidden");
+    } else {
+        refTable?.classList.add("hidden");
+        refColumn?.classList.add("hidden");
+        // Clear values when hidden to prevent stale data
+        if (refTable) refTable.value = "";
+        if (refColumn) refColumn.value = "";
+    }
+}
+
+/**
+ * Generates the SQL script based on the configured tables and columns.
+ */
+function generateSQL() {
+    const databaseNameInput = document.getElementById("databaseName");
+    const databaseName = databaseNameInput ? databaseNameInput.value.trim() : "";
+
+    if (!databaseName) {
+        alert("Please provide a database name.");
+        databaseNameInput?.focus(); // Focus on the input if it exists
+        return;
+    }
+
+    let sql = `-- SQL Script --\n\nCREATE DATABASE ${databaseName};\n\nUSE ${databaseName};\n\n`;
+
+    // Selects ALL table configuration divs, regardless of whether their panel is hidden
+    // Ensures we get the inner 'table-config' div which holds the actual form elements.
+    const tables = document.querySelectorAll(".table-config-panel .table-config");
+    const tableDefinitions = [];
+
+    if (tables.length === 0) {
+        alert("No tables configured. Please add at least one table.");
+        document.getElementById("output").textContent = "";
+        return;
+    }
+
+    for (let tableIndex = 0; tableIndex < tables.length; tableIndex++) {
+        const table = tables[tableIndex];
+        const tableNameInput = table.querySelector(".table-name");
+        const tableName = tableNameInput ? tableNameInput.value.trim() : "";
+
+        if (!tableName) {
+            alert(`Table ${tableIndex + 1} (Tab '${table.closest('.table-config-panel')?.id.replace('panel-table-', 'Table ')}'): Please provide a table name.`);
+            tableNameInput?.focus(); // Focus on the problematic input
+            return; // Stop generation if a table name is missing
+        }
+
+        let tableSQL = `CREATE TABLE ${tableName} (\n`;
+
+        const columns = table.querySelectorAll(".columnsContainer .flex-wrap");
+        const columnDefinitions = [];
+        const foreignKeys = [];
+
+        if (columns.length === 0) {
+            alert(`Table ${tableName}: No columns configured. Please add at least one column.`);
+            return; // Stop generation if columns are missing
+        }
+
+        for (let colIndex = 0; colIndex < columns.length; colIndex++) {
+            const column = columns[colIndex];
+            // Use optional chaining (?) and nullish coalescing (??) for robustness
+            // in case a querySelector returns null unexpectedly.
+            const name = column.querySelector(".col-name")?.value.trim() ?? '';
+            const type = column.querySelector(".col-type")?.value ?? '';
+            const length = column.querySelector(".col-length")?.value.trim() ?? '';
+            const nullOption = column.querySelector(".col-null")?.value ?? '';
+            const defaultValue = column.querySelector(".col-default")?.value.trim() ?? '';
+            const attributes = column.querySelector(".col-attributes")?.value ?? '';
+            const index = column.querySelector(".col-index")?.value ?? '';
+            const refTable = column.querySelector(".col-ref-table")?.value.trim() ?? '';
+            const refColumn = column.querySelector(".col-ref-column")?.value.trim() ?? '';
+
+            if (!name) {
+                alert(`Column ${colIndex + 1} in table ${tableName}: Name is required.`);
+                column.querySelector(".col-name")?.focus();
+                return; // Stop processing if column name is missing
+            }
+            if (!type) {
+                alert(`Column ${colIndex + 1} in table ${tableName}: Data type is required.`);
+                column.querySelector(".col-type")?.focus();
+                return;
+            }
+
+            let definition = `${name} ${type}`;
+            if (length) definition += `(${length})`;
+
+            if (index === "PRIMARY KEY") {
+                // MySQL specific: IDENTITY(1,1) is often AUTO_INCREMENT
+                // For SQL Server it's IDENTITY(1,1)
+                // For PostgreSQL/SQLite it's SERIAL/INTEGER PRIMARY KEY AUTOINCREMENT
+                // Adjust based on your target DB if needed for accuracy.
+                if (type === "INT" || type === "BIGINT") {
+                    // This is a common SQL Server syntax. For other databases, it might be AUTO_INCREMENT or SERIAL.
+                    definition += " IDENTITY(1,1)";
+                }
+                definition += " PRIMARY KEY"; // PRIMARY KEY implies NOT NULL and UNIQUE
+            } else if (index === "FOREIGN KEY") {
+                if (refTable && refColumn) {
+                    foreignKeys.push(`FOREIGN KEY (${name}) REFERENCES ${refTable}(${refColumn})`);
+                } else {
+                    alert(`Foreign key in table ${tableName}, column ${name}: Please provide reference table and column.`);
+                    column.querySelector(".col-ref-table")?.focus();
+                    return; // Stop processing if FK is incomplete
+                }
+                // For FK columns, apply nullability *before* the FK constraint
+                // unless it's implicit in a specific DB (e.g., SQL Server allows nullable FKs)
+                definition += ` ${nullOption}`;
+            } else {
+                definition += ` ${nullOption}`;
+            }
+
+            // Add attributes (like UNIQUE, CHECK) if not already handled by PRIMARY KEY
+            if (attributes && attributes !== "" && index !== "PRIMARY KEY") {
+                // Ensure UNIQUE isn't duplicated if PK was chosen.
+                // The check `index !== "PRIMARY KEY"` handles this correctly.
+                definition += ` ${attributes}`;
+            }
+
+            if (defaultValue) {
+                // Wrap default string values in single quotes
+                const quotedDefault = (type.includes("VARCHAR") || type.includes("NVARCHAR") || type.includes("TEXT") || type.includes("DATE") || type.includes("DATETIME") || type.includes("TIMESTAMP"))
+                                     ? `'${defaultValue}'` : defaultValue;
+                definition += ` DEFAULT ${quotedDefault}`;
+            }
+            columnDefinitions.push(definition);
+        }
+
+        tableSQL += columnDefinitions.concat(foreignKeys).join(",\n    "); // Added indentation for readability
+        tableSQL += `\n);`;
+        tableDefinitions.push(tableSQL);
+    }
+
+    sql += tableDefinitions.join("\n\n");
+    document.getElementById("output").textContent = sql;
+}
+    </script>
+</body>
+</html>
+
