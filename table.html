@@ -20,28 +20,34 @@
                 <h3 class="text-lg font-semibold">Tables</h3>
                 <button onclick="addTableConfig()" class="text-blue-500 text-xl font-bold">+</button>
             </div>
-            
-       <div class="mb-4">
-           <div id="tabsHeader" class="flex flex-wrap border-b border-red-500" role="tablist" aria-label="Table Configurations">
-           </div>
-           <div id="tabsContent" class="mt-4"></div>
-      </div>
-            
-            
-        <button onclick="generateSQL()" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">Generate SQL</button>
-
-        <div id="output" class="mt-6 p-4 border border-gray-300 rounded-md bg-gray-50 whitespace-pre-line"></div>
-    </div>
-     </div>
-    
-
+            <div class="mb-4">
+               <div id="tabsHeader" class="flex flex-wrap border-b border-red-500" role="tablist" aria-label="Table Configurations"></div>
+               <div id="tabsContent" class="mt-4"></div>
+            </div>
+        </div>
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold">
+                <button onclick="generateSQL()" 
+                    class="px-3 py-1 bg-green-500 text-white text-sm font-medium rounded-md hover:bg-green-600 transition duration-150">
+                    Generate SQL
+                </button>
+            </h3>
+                <button 
+                    onclick="copySqlCode()" 
+                    class="px-3 py-1 bg-yellow-500 text-white text-sm font-medium rounded-md hover:bg-blue-600 transition duration-150 flex items-center gap-2"
+                >
+                    <svg class="w-5 h-5 text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linejoin="round" stroke-width="2" d="M9 8v3a1 1 0 0 1-1 1H5m11 4h2a1 1 0 0 0 1-1V5a1 1 0 0 0-1-1h-7a1 1 0 0 0-1 1v1m4 3v10a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-7.13a1 1 0 0 1 .24-.65L7.7 8.35A1 1 0 0 1 8.46 8H13a1 1 0 1 1 0 1Z"/>
+                    </svg> Copy Code
+                </button>
+        </div>
+        <div id="output" class="mt-6 p-4 border border-gray-300 rounded-md bg-gray-50 whitespace-pre-line"></div>   
+    </div>  
     <footer class="text-center mt-6 text-sm text-gray-500">
         Powered by SI
     </footer>
 
-    <script>
-
-
+<script>
 // Global counter for unique IDs for tabs and panels
 let tableCounter = 0;
 // activeTableId is tracked by the showTableTab function internally,
@@ -372,7 +378,32 @@ function generateSQL() {
     sql += tableDefinitions.join("\n\n");
     document.getElementById("output").textContent = sql;
 }
-    </script>
+/**
+ * Copies the SQL code from the output area to the clipboard.
+ */
+async function copySqlCode() {
+    const outputElement = document.getElementById("output");
+    if (!outputElement) {
+        console.error("Output element not found.");
+        return;
+    }
+
+    const sqlCode = outputElement.textContent.trim(); // Trim to handle empty spaces
+
+    if (!sqlCode) {
+        alert("Clipboard is empty. Generate SQL code before copying.");
+        return;
+    }
+
+    try {
+        await navigator.clipboard.writeText(sqlCode);
+        console.log("SQL code copied to clipboard successfully!");
+    } catch (err) {
+        console.error("Failed to copy SQL code: ", err);
+    }
+}
+
+</script>
 </body>
 </html>
 
