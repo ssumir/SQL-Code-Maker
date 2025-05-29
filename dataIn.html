@@ -12,40 +12,40 @@
 
         <!-- Table Name -->
         <div class="mb-4">
-            <label for="insertTableName" class="block text-sm font-medium">Table Name</label>
+            <label for="insertTableName" class="block text-md font-medium">Table Name</label>
             <input type="text" id="insertTableName" placeholder="Enter table name" class="w-full p-2 mt-1 border border-gray-300 rounded-md">
         </div>
 
         <!-- Columns -->
         <div class="mb-4">
             <div class="flex justify-between items-center mb-2">
-                <h3 class="text-lg font-semibold">Columns</h3>
+                <h3 class="text-md font-semibold">Columns</h3>
                 <button onclick="addColumnName()" class="text-blue-500 text-xl font-bold">+</button>
             </div>
             <div id="columnNamesContainer" class="overflow-x-auto border p-2 rounded-md bg-gray-50">
                 <div id="columnsRow" class="flex gap-4">
                     <div class="flex items-center column">
-                        <input type="text" placeholder="Column Name 1" class="p-2 border border-gray-300 rounded-md column-name">
-                        <button onclick="removeColumn(this)" class="text-red-500 text-xl font-bold ml-1">-</button>
+                        <input type="text" placeholder="Column Name 1" class="p-2 border border-red-300 rounded-md column-name">
+                        <button onclick="removeColumn(this)" class="text-red-500 text-xl font-bold ml-2">-</button>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Data Rows -->
-        <div id="dataRowsContainer" class="overflow-x-auto border p-2 rounded-md bg-gray-50">
+        <div id="dataRowsContainer" class="overflow-x-auto">
             <div class="flex justify-between items-center mb-2">
-                <h3 class="text-lg font-semibold">Insert Data Rows</h3>
+                <h3 class="text-md font-semibold">Insert Data Into Rows</h3>
                 <button onclick="addDataRow()" class="text-blue-500 text-xl font-bold">+</button>
             </div>
-            <div class="flex items-center gap-4 border p-4 mb-2 data-row">
+            <div class="flex items-center gap-4 border p-2 rounded-md bg-gray-50 mb-2 data-row">
                 <input type="text" placeholder="Value 1" class="p-2 border border-gray-300 rounded-md data-value">
-                <button onclick="removeDataRow(this)" class="text-red-500 text-xl font-bold ml-2">-</button>
+                <button onclick="removeDataRow(this)" class="text-red-500 text-xl font-bold ml-1">-</button>
             </div>
         </div>
 
         <!-- Generate SQL -->
-        <button onclick="generateInsertSQL()" class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">Generate Insert SQL</button>
+        <button onclick="generateInsertSQL()" class="px-4 py-2 pt-2 mt-2 bg-green-500 text-white rounded-md hover:bg-green-600">Generate Insert SQL</button>
 
         <!-- Output -->
         <div id="insertOutput" class="mt-6 p-4 border border-gray-300 rounded-md bg-gray-50"></div>
@@ -64,8 +64,8 @@
             columnDiv.classList.add('flex', 'items-center', 'column', 'gap-2');
 
             columnDiv.innerHTML = `
-                <input type="text" placeholder="Column Name ${columnIndex}" class="p-2 border border-gray-300 rounded-md column-name">
-                <button onclick="removeColumn(this)" class="text-red-500 text-xl font-bold ml-2">-</button>
+                <input type="text" placeholder="Column Name ${columnIndex}" class="p-2  border border-red-300 rounded-md column-name">
+                <button onclick="removeColumn(this)" class="text-red-500 text-xl font-bold pl-1">-</button>
             `;
 
             columnsRow.appendChild(columnDiv);
@@ -76,7 +76,7 @@
                 const dataInput = document.createElement('input');
                 dataInput.type = 'text';
                 dataInput.placeholder = `Value ${columnIndex}`;
-                dataInput.classList.add('p-2', 'border', 'border-gray-300', 'rounded-md', 'data-value');
+                dataInput.classList.add('ml-3','p-2', 'border', 'border-gray-300', 'rounded-md', 'data-value');
                 row.insertBefore(dataInput, row.querySelector('button'));
             });
         }
