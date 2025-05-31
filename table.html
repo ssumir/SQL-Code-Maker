@@ -9,7 +9,16 @@
   
 <body class="bg-gray-100 py-8">
     <div class="container mx-auto p-6 bg-white shadow rounded-lg">
-        <h1 class="text-2xl font-bold mb-6">SQL Database and Table Generator</h1>
+                <div class="flex items-center justify-between mb-6">
+                    <h1 class="text-2xl font-bold">SQL Database and Table Generator</h1>
+                    <button 
+                        onclick="window.location.href='dataIn.html'" 
+                        class="inline-flex items-center justify-center w-10 h-10 rounded-full border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white focus:ring-2 focus:ring-blue-300 focus:outline-none"
+                    >
+                        →
+                    </button>
+                </div>
+
         <div class="mb-4">
             <label for="databaseName" class="block text-sm font-medium">Database Name</label>
             <input type="text" id="databaseName" placeholder="Enter database name" class="w-full p-2 mt-1 border border-gray-300 rounded-md">
